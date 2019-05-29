@@ -72,6 +72,7 @@ vector<item_type> read_content(const char *content_file){
 
 
 	Document item_doc;
+	char BFFR[BFFR_SIZE];
 	int cur_index = 0;
 	vector<item_type> items;
 
@@ -82,9 +83,9 @@ vector<item_type> read_content(const char *content_file){
 
 		string item_id = content.substr(0,8);
 		string item_content = content.substr(9);
-		ParseResult ok = item_doc.Parse(item_content.c_str());
+		item_doc.Parse(item_content.c_str());
 
-		if(ok){
+		if(item_doc.HasMember("Plot")){
 			int year = atof(item_doc["Year"].GetString());
 			
 			char runtime_str[128];

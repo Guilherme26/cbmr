@@ -10,7 +10,6 @@ using namespace rapidjson;
 using namespace std;
 
 #define BFFR_SIZE 65535
-char BFFR[BFFR_SIZE];
 
 typedef struct item_type{
 	/*--- This variable is responsible to keep the item's index in similarity matrix ---*/
