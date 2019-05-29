@@ -27,8 +27,9 @@ typedef struct item_type{
 	/*--- This variable was created in order to save time when calculating the similarities ---*/
 	float norm;
 
-	item_type(int _year, int _runtime, float _imdb_rating, map<string, int> _word_freq, 
+	item_type(int _index, int _year, int _runtime, float _imdb_rating, map<string, int> _word_freq, 
 				string _director, string _language, float _norm){
+		index = _index;
 		year = _year;
 		runtime = _runtime;
 		imdb_rating = _imdb_rating;
@@ -82,11 +83,12 @@ float dot(item_type item1, item_type item2){
 }
 
 
-float calc_norm(map<string, int> item){
+/*--- This function receives a vector in a dense representation and calculate its norm ---*/
+float calc_norm(map<string, int> v){
 	map<string, int>::iterator it;
 	float sum = 0.0;
 	
-	for(it = item.begin(); it != item.end(); it++)
+	for(it = v.begin(); it != v.end(); it++)
 		sum += (it->second * it->second);
 
 	return sqrt(sum);
@@ -101,7 +103,7 @@ float cos_similarity(item_type item1, item_type item2){
 }
 
 
-void read_content(const char *content_file){
+vector<item_type> read_content(const char *content_file){
 	FILE* content_stream = fopen(content_file, "r");
 	if(content_stream == NULL){
 		fprintf(stderr, "Error Openning Content File");
@@ -110,6 +112,9 @@ void read_content(const char *content_file){
 
 
 	Document item_doc;
+	int cur_index = 0;
+	vector<item_type> items;
+
 	/*--- Scape the header ItemId,Content ---*/
 	fgets(BUFFER, BUFFER_SIZE, content_stream);
 	while(fgets(BUFFER, BUFFER_SIZE, content_stream)){
@@ -117,16 +122,34 @@ void read_content(const char *content_file){
 
 		string item_id = content.substr(0,8);
 		string item_content = content.substr(9);
-		item_doc.Parse(item_content.c_str());
+		ParseResult ok = item_doc.Parse(item_content.c_str());
 
-		string plot = item_doc["Plot"].GetString();
-		
-		transform(plot.begin(), plot.end(), plot.begin(), ::tolower);
-		vector<string> tokens = tokenize(plot);
-		map<string, int> word_freq = count_freq(tokens);
+		if(ok){
+			int year = atof(item_doc["Year"].GetString());
+			
+			char runtime_str[128];
+			strcpy(runtime_str, item_doc["Runtime"].GetString());
+			int runtime = atoi(strtok(runtime_str, " "));
+			
+			float imdb_rating = atof(item_doc["imdbRating"].GetString());
+			string plot = item_doc["Plot"].GetString();
+			string director = item_doc["Director"].GetString();
+			string language = item_doc["Language"].GetString();
+			
+			transform(plot.begin(), plot.end(), plot.begin(), ::tolower);
+			vector<string> tokens = tokenize(plot);
+			map<string, int> word_freq = count_freq(tokens);
+			
+			float norm = calc_norm(word_freq);
+
+			items.push_back(item_type(cur_index, year, runtime, imdb_rating, word_freq, director, language, norm));
+
+			cur_index += 1;
+		}
 	}
 
 	fclose(content_stream);
+	return items;
 }
 
 int main(){
