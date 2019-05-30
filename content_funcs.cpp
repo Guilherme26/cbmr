@@ -1,6 +1,22 @@
 #include "content_funcs.h"
+#include <ctime>
 
-/*--- This function receives a regular expression pattern and then tokenizes the string ---*/
+int MAX_RUNTIME = 0;
+int LAST_YEAR = 0;
+int MIN_RUNTIME = INT_MAX;
+int FIRST_YEAR = INT_MAX;
+
+void set_global_constants(vector<item_type> items){
+	for(int i = 0; i < items.size(); i++){
+		MAX_RUNTIME = (items[i].runtime > MAX_RUNTIME) ? items[i].runtime : MAX_RUNTIME;
+		LAST_YEAR = (items[i].year > LAST_YEAR) ? items[i].year : LAST_YEAR;
+
+		MIN_RUNTIME = (items[i].runtime < MIN_RUNTIME) ? items[i].runtime : MIN_RUNTIME;
+		FIRST_YEAR = (items[i].year < FIRST_YEAR) ? items[i].year : FIRST_YEAR;
+	}
+}
+
+
 vector<string> tokenize(string plot){
 	regex word_pattern("[\\w]+");
 	sregex_token_iterator iterator(plot.begin(), plot.end(), word_pattern);
@@ -10,8 +26,8 @@ vector<string> tokenize(string plot){
 }
 
 
-map<string, int> count_freq(vector<string> tokens){
-	map<string, int> word_freq;
+unordered_map<string, int> count_freq(vector<string> tokens){
+	unordered_map<string, int> word_freq;
 
 	for(int i = 0; i < tokens.size(); i++){
 		if(word_freq.find(tokens[i]) == word_freq.end())
@@ -25,7 +41,7 @@ map<string, int> count_freq(vector<string> tokens){
 
 
 float dot(item_type item1, item_type item2){
-	map<string, int>::iterator it;
+	unordered_map<string, int>::iterator it;
 	float sum = 0.0;
 
 	for(it = item1.word_freq.begin(); it != item1.word_freq.end(); it++){
@@ -43,9 +59,8 @@ float dot(item_type item1, item_type item2){
 }
 
 
-/*--- This function receives a vector in a dense representation and calculate its norm ---*/
-float calc_norm(map<string, int> v){
-	map<string, int>::iterator it;
+float calc_norm(unordered_map<string, int> v){
+	unordered_map<string, int>::iterator it;
 	float sum = 0.0;
 	
 	for(it = v.begin(); it != v.end(); it++)
@@ -62,9 +77,30 @@ float cos_similarity(item_type item1, item_type item2){
 	return dot_prod / norms_prod;
 }
 
+float absolute_value(float x){
+	if(x < 0.0)
+		return -x;
+	return x;
+}
 
-vector<item_type> read_content(const char *content_file){
-	FILE* content_stream = fopen(content_file, "r");
+float similarity(item_type item1, item_type item2){
+	float sum = 0.0;
+
+	sum += (item1.director.compare(item2.director) == 0) ? 1 : 0;
+	sum += (item1.language.compare(item2.language) == 0) ? 1 : 0;	
+	sum += (absolute_value(item1.imdb_rating - item2.imdb_rating) / MAX_IMDB_RATE);
+	sum += (absolute_value(item1.year - item2.year) / (LAST_YEAR - FIRST_YEAR));
+	sum += (absolute_value(item1.runtime - item2.runtime) / (MAX_RUNTIME - MIN_RUNTIME));
+	/*--- The sum of the common features' values is then normalized in [0-1] ---*/
+	sum /= NUM_FEATURES;
+	/*--- Sums the common features similarity value with cosine similarity and normalizes ---*/
+	sum = (sum + cos_similarity(item1, item2)) / 2;
+
+	return sum;
+}
+
+vector<item_type> read_content(const char *contents_file){
+	FILE* content_stream = fopen(contents_file, "r");
 	if(content_stream == NULL){
 		fprintf(stderr, "Error Openning Content File");
 		exit(1);
@@ -99,8 +135,9 @@ vector<item_type> read_content(const char *content_file){
 			
 			transform(plot.begin(), plot.end(), plot.begin(), ::tolower);
 			vector<string> tokens = tokenize(plot);
-			map<string, int> word_freq = count_freq(tokens);
+			unordered_map<string, int> word_freq = count_freq(tokens);
 			
+
 			float norm = calc_norm(word_freq);
 
 			items.push_back(item_type(cur_index, year, runtime, imdb_rating, word_freq, director, language, norm));
@@ -111,4 +148,22 @@ vector<item_type> read_content(const char *content_file){
 
 	fclose(content_stream);
 	return items;
+}
+
+
+unordered_map<int, unordered_map<int, float> > build_similarity_matrix(vector<item_type> items){
+	unordered_map<int, unordered_map<int, float> > similarity_matrix;
+
+	for(int i = 0; i < items.size(); i++){
+		unordered_map<int, float> js;
+		
+		printf("%d\n", i);
+		/*--- As the matrix is mirrored it is only insert from i index forth ---*/
+		for(int j = i+1; j < items.size(); j++)
+			js.insert(make_pair(j, similarity(items[i], items[j])));
+
+		similarity_matrix.insert(make_pair(i, js));
+	}
+
+	return similarity_matrix;
 }

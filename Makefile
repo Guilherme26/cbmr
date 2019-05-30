@@ -1,5 +1,6 @@
 run: all 
-	./recommender content.csv ratings.csv targets.csv > submission.csv
+	./recommender data/content.csv data/ratings.csv data/targets.csv
+	# ./recommender data/content.csv data/ratings.csv data/targets.csv > submission.csv
 
 all: clean recommender
 
