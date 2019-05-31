@@ -1,4 +1,4 @@
-#include "content_funcs.h"
+#include "ratings.h"
 
 int main(int argc, char *argv[]){
 	if(argc != 4){
@@ -7,12 +7,14 @@ int main(int argc, char *argv[]){
 	}
 
 	const char *contents_file = argv[1];
-	const char *ratings_file = argv[1];
-	const char *targets_file = argv[1];
+	const char *ratings_file = argv[2];
+	const char *targets_file = argv[3];
 
-	vector<item_type> items = read_content(contents_file);
+	unordered_map<string, item_type> items = read_content(contents_file);
 	set_global_constants(items);
-	unordered_map<int, unordered_map<int, float> > similarities = build_similarity_matrix(items);
+	unordered_map<string, unordered_map<string, int> > user_to_items = read_ratings(ratings_file);
+	build_submission_file(items, user_to_items, targets_file);
+
 
 	return 0;
 }

@@ -1,3 +1,4 @@
 recommender
 data/*
 submission.csv
+*.o
