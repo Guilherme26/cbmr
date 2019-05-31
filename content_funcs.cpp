@@ -19,6 +19,18 @@ void set_global_constants(unordered_map<string, item_type> items){
 }
 
 
+set<string> get_stopwords(const char *stopwords_file){
+	FILE *in_stream = fopen(stopwords_file, "r");
+	set<string> stopwords;
+	char str[128];
+	
+	while(fscanf(in_stream, "%s", str) != EOF)
+		stopwords.insert(string(str));
+
+	return stopwords;
+}
+
+
 vector<string> tokenize(string plot){
 	regex word_pattern("[\\w]+");
 	sregex_token_iterator iterator(plot.begin(), plot.end(), word_pattern);
@@ -28,14 +40,16 @@ vector<string> tokenize(string plot){
 }
 
 
-unordered_map<string, int> count_freq(vector<string> tokens){
+unordered_map<string, int> count_freq(set<string> stopwords, vector<string> tokens){
 	unordered_map<string, int> word_freq;
 
 	for(int i = 0; i < tokens.size(); i++){
-		if(word_freq.find(tokens[i]) == word_freq.end())
-			word_freq[tokens[i]] = 1;
-		else
-			word_freq[tokens[i]] += 1;
+		if(stopwords.find(tokens[i]) != stopwords.end()){
+			if(word_freq.find(tokens[i]) == word_freq.end())
+				word_freq[tokens[i]] = 1;
+			else
+				word_freq[tokens[i]] += 1;
+		}
 	}
 
 	return word_freq;
@@ -95,7 +109,7 @@ float similarity(item_type item1, item_type item2){
 	return sum;
 }
 
-unordered_map<string, item_type> read_content(const char *contents_file){
+unordered_map<string, item_type> read_content(set<string> stopwords, const char *contents_file){
 	FILE* in_stream = fopen(contents_file, "r");
 	if(in_stream == NULL){
 		fprintf(stderr, "Error Openning Content File");
@@ -131,7 +145,7 @@ unordered_map<string, item_type> read_content(const char *contents_file){
 			
 			transform(plot.begin(), plot.end(), plot.begin(), ::tolower);
 			vector<string> tokens = tokenize(plot);
-			unordered_map<string, int> word_freq = count_freq(tokens);
+			unordered_map<string, int> word_freq = count_freq(stopwords, tokens);
 
 			float norm = calc_norm(word_freq);
 

@@ -1,6 +1,7 @@
 #include "rapidjson/filereadstream.h"
 #include "rapidjson/document.h"
 #include <unordered_map>
+#include <set>
 #include <algorithm>
 #include <iostream>
 #include <regex>
@@ -49,9 +50,12 @@ typedef struct item_type{
 */
 void set_global_constants(unordered_map<string, item_type> items);
 
+set<string> get_stopwords(const char *stopwords_file);
+
 /*--- This function receives a regular expression pattern and then tokenizes the string ---*/
 vector<string> tokenize(string plot);
 
+unordered_map<string, int> count_freq(set<string> stopwords, vector<string> tokens);
 
 /*--- This function receives a vector in a dense representation and calculate its norm ---*/
 float calc_norm(unordered_map<string, int> v);
@@ -63,4 +67,4 @@ float absolute_value(float x);
 /*--- Returns a similarity measure that lays in [0-1] and considers the common features and the textual features ---*/
 float similarity(item_type item1, item_type item2);
 
-unordered_map<string, item_type> read_content(const char *contents_file);
+unordered_map<string, item_type> read_content(set<string> stopwords, const char *contents_file);
