@@ -41,7 +41,7 @@ double predict(unordered_map<string, item_type> &items, unordered_map<string, in
 		sum_of_weights += cur_weight;
 		prediction += (cur_weight * consumed_rate);
 	}
-
+	sum_of_weights = sum_of_weights > 0.0 ? sum_of_weights : 1.0;
 	return prediction / sum_of_weights;
 }
 
