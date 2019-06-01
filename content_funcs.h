@@ -60,11 +60,13 @@ unordered_map<string, int> count_freq(set<string> stopwords, vector<string> toke
 /*--- This function receives a vector in a dense representation and calculate its norm ---*/
 double calc_norm(unordered_map<string, int> v);
 
-double cos_similarity(item_type item1, item_type item2);
+double dot(item_type &item1, item_type &item2);
+
+double cos_similarity(item_type &item1, item_type &item2);
 
 double absolute_value(double x);
 
 /*--- Returns a similarity measure that lays in [0-1] and considers the common features and the textual features ---*/
-double sim(item_type item1, item_type item2);
+double sim(item_type &item1, item_type &item2);
 
 unordered_map<string, item_type> read_content(set<string> stopwords, const char *contents_file);

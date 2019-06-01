@@ -67,13 +67,12 @@ double calc_norm(unordered_map<string, int> v){
 }
 
 
-double cos_similarity(item_type item1, item_type item2){
-	unordered_map<string, int>::iterator it;
+double dot(item_type &item1, item_type &item2){
 	double dot_prod = 0.0;
 
-	for(it = item1.word_freq.begin(); it != item1.word_freq.end(); it++){
-		string first_token = it->first;
-		int first_freq = it->second;
+	for(auto& iterator : item1.word_freq){
+		string first_token = iterator.first;
+		int first_freq = iterator.second;
 
 		/*--- Then the current token exists in the dict ---*/
 		if(item2.word_freq.find(first_token) != item2.word_freq.end()){
@@ -82,6 +81,12 @@ double cos_similarity(item_type item1, item_type item2){
 		}
 	}
 
+	return dot_prod;
+}
+
+
+double cos_similarity(item_type &item1, item_type &item2){
+	double dot_prod = dot(item1, item2);
 	double norms_prod = item1.norm * item2.norm;
 	
 	return dot_prod / norms_prod;
@@ -93,7 +98,7 @@ double absolute_value(double x){
 	return x;
 }
 
-double sim(item_type item1, item_type item2){
+double sim(item_type &item1, item_type &item2){
 	double sum = 0.0;
 
 	sum += (item1.director.compare(item2.director) == 0) ? 1 : 0;
