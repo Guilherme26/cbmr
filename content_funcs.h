@@ -65,6 +65,6 @@ float cos_similarity(item_type item1, item_type item2);
 float absolute_value(float x);
 
 /*--- Returns a similarity measure that lays in [0-1] and considers the common features and the textual features ---*/
-float similarity(item_type item1, item_type item2);
+float sim(item_type item1, item_type item2);
 
 unordered_map<string, item_type> read_content(set<string> stopwords, const char *contents_file);

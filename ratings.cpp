@@ -27,16 +27,19 @@ unordered_map<string, unordered_map<string, int> > read_ratings(const char *rati
 }
 
 
-float predict(unordered_map<string, item_type> items, unordered_map<string, int> consumed_items, string item_unknown){
-	float prediction = 0.0, sum_of_weights = 0.0;
-	
-	for(auto& iterator : items){
-		string consumed_id = iterator.first;
-		item_type consumed = iterator.second;
+float predict(unordered_map<string, item_type> &items, unordered_map<string, int> &consumed_items, string item_unknown){
+	/*--- If there were no consumed items returns some value ---*/
+	if(consumed_items.size() == 0)
+		return 7.0;
 
-		float cur_weight = similarity(items[item_unknown], consumed);
+	float prediction = 0.0, sum_of_weights = 0.0;
+	for(auto& iterator : consumed_items){
+		string consumed_id = iterator.first;
+		int consumed_rate = iterator.second;
+
+		float cur_weight = sim(items[item_unknown], items[consumed_id]);
 		sum_of_weights += cur_weight;
-		prediction += (cur_weight * consumed_items[consumed_id]);
+		prediction += (cur_weight * consumed_rate);
 	}
 
 	return prediction / sum_of_weights;
@@ -57,7 +60,6 @@ void build_submission_file(unordered_map<string, item_type> items,
 	while(fscanf(in_stream, "%s", line) != EOF){
 		string user_id = string(strtok(line, ":"));
 		string item_id = string(strtok(NULL, ","));
-
 		printf("%s:%s,%f\n", user_id.c_str(), item_id.c_str(), predict(items, user_to_items[user_id], item_id));
 	}
 	fclose(in_stream);

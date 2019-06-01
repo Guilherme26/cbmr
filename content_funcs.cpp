@@ -93,7 +93,7 @@ float absolute_value(float x){
 	return x;
 }
 
-float similarity(item_type item1, item_type item2){
+float sim(item_type item1, item_type item2){
 	float sum = 0.0;
 
 	sum += (item1.director.compare(item2.director) == 0) ? 1 : 0;
