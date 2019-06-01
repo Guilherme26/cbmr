@@ -56,9 +56,9 @@ unordered_map<string, int> count_freq(set<string> stopwords, vector<string> toke
 }
 
 
-float calc_norm(unordered_map<string, int> v){
+double calc_norm(unordered_map<string, int> v){
 	unordered_map<string, int>::iterator it;
-	float sum = 0.0;
+	double sum = 0.0;
 	
 	for(it = v.begin(); it != v.end(); it++)
 		sum += (it->second * it->second);
@@ -67,9 +67,9 @@ float calc_norm(unordered_map<string, int> v){
 }
 
 
-float cos_similarity(item_type item1, item_type item2){
+double cos_similarity(item_type item1, item_type item2){
 	unordered_map<string, int>::iterator it;
-	float dot_prod = 0.0;
+	double dot_prod = 0.0;
 
 	for(it = item1.word_freq.begin(); it != item1.word_freq.end(); it++){
 		string first_token = it->first;
@@ -82,19 +82,19 @@ float cos_similarity(item_type item1, item_type item2){
 		}
 	}
 
-	float norms_prod = item1.norm * item2.norm;
+	double norms_prod = item1.norm * item2.norm;
 	
 	return dot_prod / norms_prod;
 }
 
-float absolute_value(float x){
+double absolute_value(double x){
 	if(x < 0.0)
 		return -x;
 	return x;
 }
 
-float sim(item_type item1, item_type item2){
-	float sum = 0.0;
+double sim(item_type item1, item_type item2){
+	double sum = 0.0;
 
 	sum += (item1.director.compare(item2.director) == 0) ? 1 : 0;
 	sum += (item1.language.compare(item2.language) == 0) ? 1 : 0;	
@@ -106,7 +106,7 @@ float sim(item_type item1, item_type item2){
 	/*--- Sums the common features similarity value with cosine similarity and normalizes ---*/
 	sum = (sum + cos_similarity(item1, item2)) / 2;
 
-	return sum;
+	return isnan(sum) ? 0.0 : sum;
 }
 
 unordered_map<string, item_type> read_content(set<string> stopwords, const char *contents_file){
@@ -138,7 +138,7 @@ unordered_map<string, item_type> read_content(set<string> stopwords, const char 
 			strcpy(runtime_str, item_doc["Runtime"].GetString());
 			int runtime = atoi(strtok(runtime_str, " "));
 			
-			float imdb_rating = atof(item_doc["imdbRating"].GetString());
+			double imdb_rating = atof(item_doc["imdbRating"].GetString());
 			string plot = item_doc["Plot"].GetString();
 			string director = item_doc["Director"].GetString();
 			string language = item_doc["Language"].GetString();
@@ -147,7 +147,7 @@ unordered_map<string, item_type> read_content(set<string> stopwords, const char 
 			vector<string> tokens = tokenize(plot);
 			unordered_map<string, int> word_freq = count_freq(stopwords, tokens);
 
-			float norm = calc_norm(word_freq);
+			double norm = calc_norm(word_freq);
 
 			items.insert(make_pair(index, item_type(year, runtime, imdb_rating, word_freq, director, language, norm)));
 		}

@@ -16,6 +16,5 @@ int main(int argc, char *argv[]){
 	unordered_map<string, unordered_map<string, int> > user_to_items = read_ratings(ratings_file);
 	build_submission_file(items, user_to_items, targets_file);
 
-
 	return 0;
 }

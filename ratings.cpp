@@ -27,17 +27,17 @@ unordered_map<string, unordered_map<string, int> > read_ratings(const char *rati
 }
 
 
-float predict(unordered_map<string, item_type> &items, unordered_map<string, int> &consumed_items, string item_unknown){
+double predict(unordered_map<string, item_type> &items, unordered_map<string, int> &consumed_items, string item_unknown){
 	/*--- If there were no consumed items returns some value ---*/
-	if(consumed_items.size() == 0)
+	if(consumed_items.size() == 0 or items.find(item_unknown) == items.end())
 		return 7.0;
 
-	float prediction = 0.0, sum_of_weights = 0.0;
+	double prediction = 0.0, sum_of_weights = 0.0;
 	for(auto& iterator : consumed_items){
 		string consumed_id = iterator.first;
 		int consumed_rate = iterator.second;
 
-		float cur_weight = sim(items[item_unknown], items[consumed_id]);
+		double cur_weight = sim(items[item_unknown], items[consumed_id]);
 		sum_of_weights += cur_weight;
 		prediction += (cur_weight * consumed_rate);
 	}
