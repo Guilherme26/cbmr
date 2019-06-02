@@ -107,9 +107,9 @@ double sim(item_type &item1, item_type &item2){
 	sum += (absolute_value(item1.year - item2.year) / (LAST_YEAR - FIRST_YEAR));
 	sum += (absolute_value(item1.runtime - item2.runtime) / (MAX_RUNTIME - MIN_RUNTIME));
 	/*--- The sum of the common features' values is then normalized in [0-1] ---*/
-	sum /= NUM_FEATURES;
+	sum /= NORM_FACTOR;
 	/*--- Sums the common features similarity value with cosine similarity and normalizes ---*/
-	sum = (sum + cos_similarity(item1, item2)) / 2;
+	sum = (sum + cos_similarity(item1, item2)) / 1.5;
 
 	return isnan(sum) ? 0.0 : sum;
 }

@@ -14,7 +14,7 @@ using namespace std;
 
 #define BFFR_SIZE 65535
 #define MAX_IMDB_RATE 10
-#define NUM_FEATURES 6
+#define NORM_FACTOR 10
 
 typedef struct item_type{
 	int year;
